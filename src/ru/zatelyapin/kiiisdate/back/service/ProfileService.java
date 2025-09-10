@@ -35,10 +35,4 @@ public class ProfileService {
         if (id == null) return false;
         return true;
     }
-
-
-
-    //TODO delete, update, findAll
-
-
 }

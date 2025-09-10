@@ -1,5 +1,9 @@
 package ru.zatelyapin.kiiisdate.back;
 
+import ru.zatelyapin.kiiisdate.back.controller.ProfileController;
+import ru.zatelyapin.kiiisdate.back.dao.ProfileDao;
+import ru.zatelyapin.kiiisdate.back.service.ProfileService;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,18 +14,26 @@ import java.util.Scanner;
 public class KiiisDateBackServerRunner {
 
     public static void main(String[] args) throws IOException {
+
+        ProfileController controller = new ProfileController(new ProfileService(new ProfileDao()));
+
         try (ServerSocket serverSocket = new ServerSocket(8080);
              Socket socket = serverSocket.accept();
-             DataOutputStream rsStream = new DataOutputStream(socket.getOutputStream());
-             DataInputStream rqStream = new DataInputStream(socket.getInputStream()) //TODO чат с сервером
+             DataInputStream requestStream = new DataInputStream(socket.getInputStream());
+             DataOutputStream responseStream = new DataOutputStream(socket.getOutputStream())
+
         ){
-            String request = rqStream.readUTF();
-
+            String request = requestStream.readUTF();
+            String response;
             while (!"stop".equals(request)){
-                String response = "Hi from server";
+                if(request.startsWith("save ")){
+                    response = controller.save(request.split("save ")[1]);
+                }else {
+                    response = "Unsupported operation";
+                }
+                responseStream.writeUTF(response);
+                request = requestStream.readUTF();
 
-                rsStream.writeUTF(response);
-                request = rqStream.readUTF();
             }
         }
     }
